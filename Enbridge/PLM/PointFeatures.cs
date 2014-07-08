@@ -19,7 +19,14 @@ namespace Enbridge.PLM
             this.pendingFeaturesList = new List<PointFeat>();
         }
 
-
+        /// <summary>
+        /// Add a point feature
+        /// </summary>
+        /// <param name="routeId"></param>
+        /// <param name="featureType"></param>
+        /// <param name="description"></param>
+        /// <param name="stn"></param>
+        /// <returns></returns>
         public bool addFeatureByStn(string routeId, string featureType, string description, double stn)
         {
             Enbridge.LinearReferencing.ContLineLocatorSQL loc = new Enbridge.LinearReferencing.ContLineLocatorSQL(routeId);
@@ -32,6 +39,14 @@ namespace Enbridge.PLM
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="routeId"></param>
+        /// <param name="featureType"></param>
+        /// <param name="description"></param>
+        /// <param name="mp"></param>
+        /// <returns></returns>
         public bool addFeatureByMP(string routeId, string featureType, string description, double mp)
         {
             Enbridge.LinearReferencing.ContLineLocatorSQL loc = new Enbridge.LinearReferencing.ContLineLocatorSQL(routeId);
@@ -56,7 +71,7 @@ namespace Enbridge.PLM
 
         public bool saveToDatabase(string reportID)
         {
-
+            Console.WriteLine("feature count {0}", this.pendingFeaturesList.Count);
             bool successStatus = false;
 
             if (this.pendingFeaturesList.Count == 0)

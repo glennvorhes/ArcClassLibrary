@@ -27,6 +27,7 @@ namespace UnitTests
             report.rowInfo.setTenantTabValues("glenn", "4444", "45555", Guid.NewGuid(), "comments", "yes");
             report.rowInfo.setAccessTabValues(Guid.NewGuid(), "yes", "40", "20", "no", "yes", "yes");
             report.rowInfo.setWorkAreaTabValues("50", "40", "yes", "no", "no");
+            report.pointFeatures.addFeatureByStn("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", "{791FC1FB-47C2-4DEB-97A8-7B90FEE38921}", "desc", 1000);
 
             bool success = report.saveReport();
             

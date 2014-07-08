@@ -143,14 +143,16 @@ namespace Enbridge.PLM
             }
             else
             {
-                bool successPermanentRepair, successCorossionInspection, successRowInfo, successFileUpload;
+                bool successPermanentRepair, successCorossionInspection,
+                    successRowInfo, successFileUpload;
 
                 successPermanentRepair = this.permanentRepair.saveToDatabase(this.reportId);
                 successCorossionInspection = this.corrosionInspection.saveToDatabase(this.reportId);
                 successRowInfo = this.rowInfo.saveToDatabase(this.reportId);
                 successFileUpload = this.fileAttachments.savePendingFilesToDatabase(this.reportId);
 
-                saveSuccessStatus = (successPermanentRepair && successCorossionInspection && successRowInfo && successFileUpload);
+                saveSuccessStatus = (successPermanentRepair && successCorossionInspection &&
+                    successRowInfo && successFileUpload);
 
                 if (!saveSuccessStatus)
                 {
