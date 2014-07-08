@@ -116,7 +116,7 @@ namespace Enbridge.PLM
             return successStatus;
         }
 
-
+        [Serializable]
         private class PointFeat
         {
             public string ID;
