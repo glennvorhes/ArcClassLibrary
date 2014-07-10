@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using Enbridge.PLM;
 
 namespace UnitTests
 {
@@ -60,6 +61,17 @@ namespace UnitTests
             bool success = report.saveReport();
 
             Assert.IsTrue(success, "something went wrong");
+        }
+
+        [TestMethod]
+        public void TestAddLinear()
+        {
+            LinearFeatures linearFeats = new LinearFeatures();
+
+            bool success = linearFeats.addFeatureByMP("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc", 1000, 1001);
+            bool saveSucces = linearFeats.saveToDatabase(Guid.NewGuid().ToString());
+            Assert.IsTrue(success);
+            Assert.IsTrue(saveSucces);
         }
     }
 }
