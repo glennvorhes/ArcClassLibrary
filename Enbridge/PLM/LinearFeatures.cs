@@ -117,6 +117,7 @@ namespace Enbridge.PLM
                 comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 2;";
 
 
+
                 foreach (LinearFeat feat in this.pendingFeaturesList)
                 {
                     //comm.CommandText = String.Format(commandString, feat.geomString);
