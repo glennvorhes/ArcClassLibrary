@@ -78,6 +78,8 @@ namespace Enbridge.PLM
             this.existingReport = true;
             this.reportProperties = new ReportProperties(reportId);
             this.foreignCrossing = new ForeignCrossing(reportId);
+            this.pointFeatures = new PointFeatures(reportId);
+            this.linearFeatures = new LinearFeatures(reportId);
             if (!this.foreignCrossing.hasValuesSet)
             {
                 this.isForeignCrossing = false;

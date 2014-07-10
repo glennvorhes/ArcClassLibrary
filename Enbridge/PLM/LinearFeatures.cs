@@ -11,9 +11,13 @@ namespace Enbridge.PLM
 
 
 
-        public LinearFeatures()
+        public LinearFeatures(string reportId = null)
         {
 
+            if (reportId != null)
+            {
+                //populate existing features from database
+            }
 
         }
 

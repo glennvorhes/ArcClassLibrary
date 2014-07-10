@@ -13,10 +13,15 @@ namespace Enbridge.PLM
         private List<PointFeat> existingFeaturesList;
         private List<PointFeat> pendingFeaturesList;
 
-        public PointFeatures()
+        public PointFeatures(string reportId = null)
         {
             this.existingFeaturesList = new List<PointFeat>();
             this.pendingFeaturesList = new List<PointFeat>();
+
+            if (reportId != null)
+            {
+                //populate existing features from database
+            }
         }
 
         /// <summary>
