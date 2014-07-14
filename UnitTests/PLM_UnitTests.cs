@@ -69,9 +69,20 @@ namespace UnitTests
             LinearFeatures linearFeats = new LinearFeatures();
 
             bool success = linearFeats.addFeatureByMP("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc", 1000, 1001);
-            bool saveSucces = linearFeats.saveToDatabase(Guid.NewGuid().ToString());
+            bool saveSuccess = linearFeats.saveToDatabase(Guid.NewGuid().ToString());
             Assert.IsTrue(success);
-            Assert.IsTrue(saveSucces);
+            Assert.IsTrue(saveSuccess);
+        }
+
+        [TestMethod]
+        public void TestAddPoint()
+        {
+            PointFeatures pointFeats = new PointFeatures();
+
+            bool success = pointFeats.addFeatureByMP("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc", 1010);
+            bool saveSuccess = pointFeats.saveToDatabase(Guid.NewGuid().ToString());
+            Assert.IsTrue(success);
+            Assert.IsTrue(saveSuccess);
         }
     }
 }

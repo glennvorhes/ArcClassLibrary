@@ -89,23 +89,24 @@ namespace Enbridge.PLM
                 conn.Open();
                 SqlCommand comm = conn.CreateCommand();
 
-                string commandString = "";
-                commandString += "EXEC sde.set_current_version 'SDE.Working';";
-                commandString += "EXEC sde.edit_version 'SDE.Working', 1;";
-                commandString += "BEGIN TRANSACTION;";
-                commandString += "INSERT INTO sde.POINT_FEATURE_EVW ";
-                commandString += "(ID, ReportID, RouteID, StationSeriesID, DateAdded, Stationing, ";
-                commandString += "MilePost, FeatureType, Latitude, Longitude, Description, Shape) ";
-                commandString += "VALUES ";
-                commandString += "(@ID, @ReportID, @RouteID, @StationSeriesID, GETDATE(), @Stationing, ";
-                commandString += "@MilePost, @FeatureType, @Latitude, @Longitude, @Description, {0}) ";
-                commandString += "COMMIT;";
-                commandString += "EXEC sde.edit_version 'SDE.Working', 2;";
+                comm.CommandText = "";
+                comm.CommandText += "Declare @geom geometry;";
+                comm.CommandText += "SET @geom = geometry::STPointFromText(@geom_text, 4326).MakeValid();";
+                comm.CommandText += "EXEC sde.set_current_version 'SDE.Working';";
+                comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 1;";
+                comm.CommandText += "BEGIN TRANSACTION;";
+                comm.CommandText += "INSERT INTO sde.POINT_FEATURE_EVW ";
+                comm.CommandText += "(ID, ReportID, RouteID, StationSeriesID, DateAdded, Stationing, ";
+                comm.CommandText += "MilePost, FeatureType, Latitude, Longitude, Description, Shape) ";
+                comm.CommandText += "VALUES ";
+                comm.CommandText += "(@ID, @ReportID, @RouteID, @StationSeriesID, GETDATE(), @Stationing, ";
+                comm.CommandText += "@MilePost, @FeatureType, @Latitude, @Longitude, @Description, @geom) ";
+                comm.CommandText += "COMMIT;";
+                comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 2;";
 
 
                 foreach (PointFeat feat in this.pendingFeaturesList)
                 {
-                    comm.CommandText = String.Format(commandString, feat.geomString);
                     comm.Parameters.Clear();
                     comm.Parameters.AddWithValue("@ID", feat.ID);
                     comm.Parameters.AddWithValue("@ReportID", reportID);
@@ -117,6 +118,9 @@ namespace Enbridge.PLM
                     comm.Parameters.AddWithValue("@Latitude", feat.latitude);
                     comm.Parameters.AddWithValue("@Longitude", feat.longitude);
                     comm.Parameters.AddWithValue("@Description", feat.description);
+                    comm.Parameters.AddWithValue("@geom_text", feat.geomString);
+
+                    
 
                     try
                     {
@@ -163,7 +167,7 @@ namespace Enbridge.PLM
                 this.latitude = lat;
                 this.longitude = lon;
                 this.description = description;
-                this.geomString = String.Format("geometry::STPointFromText('POINT ({0} {1} {2} {3})', 4326)", lon, lat, Z, stationing);
+                this.geomString = String.Format("POINT ({0} {1} {2} {3})", lon, lat, Z, stationing);
             }
 
         }
