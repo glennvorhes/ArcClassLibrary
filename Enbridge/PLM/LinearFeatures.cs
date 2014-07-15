@@ -7,12 +7,20 @@ using System.Threading.Tasks;
 
 namespace Enbridge.PLM
 {
+    /// <summary>
+    /// two lists of LinearFeat as defined by the private class
+    /// </summary>
+    [Serializable]
     public class LinearFeatures
     {
 
         private List<LinearFeat> existingFeaturesList;
         private List<LinearFeat> pendingFeaturesList;
 
+        /// <summary>
+        /// Create the LinearFeatures object
+        /// </summary>
+        /// <param name="reportId">optional reportId property for existing reports</param>
         public LinearFeatures(string reportId = null)
         {
             this.existingFeaturesList = new List<LinearFeat>();
@@ -64,7 +72,7 @@ namespace Enbridge.PLM
             string stnSeriesId2 = loc.getLocation(X2, Y2);
 
             string geomText = loc.makeSegmentLineString(meas1, meas2);
-            Console.WriteLine(geomText);
+            Console.WriteLine("Geometry Text {0}", geomText);
 
             this.pendingFeaturesList.Add(
                 new LinearFeat(routeId, stnSeriesId1, stnSeriesId2, 
@@ -86,7 +94,7 @@ namespace Enbridge.PLM
 
         public bool saveToDatabase(string reportID)
         {
-            Console.WriteLine("feature count {0}", this.pendingFeaturesList.Count);
+            Console.WriteLine("linear feature count {0}", this.pendingFeaturesList.Count);
             bool successStatus = false;
 
             if (this.pendingFeaturesList.Count == 0)
@@ -106,13 +114,13 @@ namespace Enbridge.PLM
                 comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 1;";
                 comm.CommandText += "BEGIN TRANSACTION;";
                 comm.CommandText += "INSERT INTO sde.LINEAR_FEATURE_EVW ";
-                comm.CommandText += "(ID, Shape) ";
-            //    commandString += "(ID, ReportID, RouteID, StationSeriesID, DateAdded, Stationing, ";
-            //    commandString += "MilePost, FeatureType, Latitude, Longitude, Description, Shape) ";
+                comm.CommandText += "(ID, Shape, ReportID, RouteID, StationSeriesIDStart, StationSeriesIDEnd, ";
+                comm.CommandText += "DateAdded, StationingStart, StationingEnd, MilePostStart, MilePostEnd, FeatureType, ";
+                comm.CommandText += "LatitudeStart, LongitudeStart, LatitudeEnd, LongitudeEnd, Description) ";
                 comm.CommandText += "VALUES ";
-                comm.CommandText += "(@ID, @geom);";
-            //    commandString += "(@ID, @ReportID, @RouteID, @StationSeriesID, GETDATE(), @Stationing, ";
-            //    commandString += "@MilePost, @FeatureType, @Latitude, @Longitude, @Description, {0}) ";
+                comm.CommandText += "(@ID, @geom, @ReportID, @RouteID, @StationSeriesIDStart, @StationSeriesIDEnd, ";
+                comm.CommandText += "GETDATE(), @StationingStart, @StationingEnd, @MilePostStart, @MilePostEnd, @FeatureType, ";
+                comm.CommandText += "@LatitudeStart, @LongitudeStart, @LatitudeEnd, @LongitudeEnd, @Description);";
                 comm.CommandText += "COMMIT;";
                 comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 2;";
 
@@ -124,15 +132,20 @@ namespace Enbridge.PLM
                     comm.Parameters.Clear();
                     comm.Parameters.AddWithValue("@ID", feat.ID);
                     comm.Parameters.AddWithValue("@geom_text", feat.geomString);
-                    //comm.Parameters.AddWithValue("@ReportID", reportID);
-                    //comm.Parameters.AddWithValue("@RouteID", feat.routeId);
-                    //comm.Parameters.AddWithValue("@StationSeriesID", feat.stnSeriesId);
-                    //comm.Parameters.AddWithValue("@Stationing", feat.stationing);
-                    //comm.Parameters.AddWithValue("@MilePost", feat.milePost);
-                    //comm.Parameters.AddWithValue("@FeatureType", feat.featureType);
-                    //comm.Parameters.AddWithValue("@Latitude", feat.latitude);
-                    //comm.Parameters.AddWithValue("@Longitude", feat.longitude);
-                    //comm.Parameters.AddWithValue("@Description", feat.description);
+                    comm.Parameters.AddWithValue("@ReportID", reportID);
+                    comm.Parameters.AddWithValue("@RouteID", feat.routeId);
+                    comm.Parameters.AddWithValue("@StationSeriesIDStart", feat.stnSeriesIdStart);
+                    comm.Parameters.AddWithValue("@StationSeriesIDEnd", feat.stnSeriesIdEnd);
+                    comm.Parameters.AddWithValue("@StationingStart", feat.stationingStart);
+                    comm.Parameters.AddWithValue("@StationingEnd", feat.stationingEnd);
+                    comm.Parameters.AddWithValue("@MilePostStart", feat.milePostStart);
+                    comm.Parameters.AddWithValue("@MilePostEnd", feat.milePostEnd);
+                    comm.Parameters.AddWithValue("@FeatureType", feat.featureType);
+                    comm.Parameters.AddWithValue("@LatitudeStart", feat.latitudeStart);
+                    comm.Parameters.AddWithValue("@LongitudeStart", feat.longitudeStart);
+                    comm.Parameters.AddWithValue("@LatitudeEnd", feat.latitudeEnd);
+                    comm.Parameters.AddWithValue("@LongitudeEnd", feat.longitudeEnd);
+                    comm.Parameters.AddWithValue("@Description", feat.description);
 
                     try
                     {

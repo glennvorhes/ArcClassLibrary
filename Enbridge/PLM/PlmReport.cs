@@ -130,6 +130,13 @@ namespace Enbridge.PLM
                 return saveSuccessStatus;
             }
 
+            saveSuccessStatus = this.linearFeatures.saveToDatabase(this.reportId);
+            if (!saveSuccessStatus)
+            {
+                this.deleteReport();
+                return saveSuccessStatus;
+            }
+
 
             if (this.isForeignCrossing)
             {

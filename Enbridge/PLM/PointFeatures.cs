@@ -76,7 +76,7 @@ namespace Enbridge.PLM
 
         public bool saveToDatabase(string reportID)
         {
-            Console.WriteLine("feature count {0}", this.pendingFeaturesList.Count);
+            Console.WriteLine("point feature count {0}", this.pendingFeaturesList.Count);
             bool successStatus = false;
 
             if (this.pendingFeaturesList.Count == 0)
