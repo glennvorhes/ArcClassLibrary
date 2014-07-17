@@ -84,5 +84,16 @@ namespace UnitTests
             Assert.IsTrue(success);
             Assert.IsTrue(saveSuccess);
         }
+
+        [TestMethod]
+        public void getExistingFeatures()
+        {
+            PointFeatures pointFeats = new PointFeatures("{C2031F6A-A596-41FA-B87D-A7A03AA0F435}");
+            LinearFeatures linearFeats = new LinearFeatures("{C2031F6A-A596-41FA-B87D-A7A03AA0F435}");
+
+            Assert.AreEqual(pointFeats.existingFeaturesDataItems.Count, 3);
+        }
+
+        
     }
 }

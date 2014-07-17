@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Geocortex.Forms.Client;
 
 namespace Enbridge.PLM
 {
@@ -12,15 +13,59 @@ namespace Enbridge.PLM
     {
         private List<PointFeat> existingFeaturesList;
         private List<PointFeat> pendingFeaturesList;
+        public List<DataItem> existingFeaturesDataItems;
 
         public PointFeatures(string reportId = null)
         {
             this.existingFeaturesList = new List<PointFeat>();
             this.pendingFeaturesList = new List<PointFeat>();
+            this.existingFeaturesDataItems = new List<DataItem>();
 
             if (reportId != null)
             {
-                //populate existing features from database
+                using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
+                {
+                    conn.Open();
+                    SqlCommand comm = conn.CreateCommand();
+
+                    comm.CommandText = "";
+                    comm.CommandText += "EXEC sde.set_current_version 'SDE.Working';";
+                    comm.CommandText += "Select *, Shape.STAsText() As geomWKT FROM sde.POINT_FEATURE_EVW pointTable ";
+                    comm.CommandText += "LEFT JOIN sde.POINT_FEATURE_TYPE_EVW pType ";
+                    comm.CommandText += "ON pointTable.FeatureType = pType.ID ";
+                    comm.CommandText += "WHERE pointTable.ReportID = @ReportID;";
+
+                    comm.Parameters.AddWithValue("@ReportID", reportId);
+
+                    try
+                    {
+                        SqlDataReader reader = comm.ExecuteReader();
+
+                        while (reader.Read())
+                        {
+                            string id = reader["ID"].ToString();
+                            string type = reader["Type"].ToString();
+                            string desc = reader["Description"].ToString();
+                            string display = string.Format("{0}: {1}", type, desc);
+
+                            this.existingFeaturesDataItems.Add(
+                                new DataItem(display, id)
+                                );
+
+                            this.existingFeaturesList.Add(new PointFeat(reader));
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+
+                        comm.Dispose();
+                        conn.Close();
+                    }
+                }
             }
         }
 
@@ -168,6 +213,38 @@ namespace Enbridge.PLM
                 this.longitude = lon;
                 this.description = description;
                 this.geomString = String.Format("POINT ({0} {1} {2} {3})", lon, lat, Z, stationing);
+            }
+
+            public PointFeat(SqlDataReader reader)
+            {
+                double stn, mp, lat, lon;
+                this.ID = reader["ID"].ToString();
+                this.routeId = reader["RouteID"].ToString();
+                this.stnSeriesId = reader["StationSeriesID"].ToString();
+                if (Double.TryParse(reader["Stationing"].ToString(), out stn))
+                    this.stationing = stn;
+                else
+                    this.stationing = 0;
+                if (Double.TryParse(reader["MilePost"].ToString(), out mp))
+                    this.milePost = mp;
+                else
+                    this.milePost = 0;
+                this.featureType = reader["FeatureType"].ToString();
+                if (Double.TryParse(reader["Latitude"].ToString(), out lat))
+                    this.latitude = lat;
+                else
+                    this.latitude = 45;
+                if (Double.TryParse(reader["Longitude"].ToString(), out lon))
+                    this.longitude = lon;
+                else
+                    this.longitude = -92;
+                this.description = reader["Description"].ToString();
+                this.geomString = reader["geomWKT"].ToString();
+
+
+                //ID, ReportID, RouteID, StationSeriesID, DateAdded, Stationing, ";
+                // "MilePost, FeatureType, Latitude, Longitude, Description, Shape, geomWKT, Type
+
             }
 
         }
