@@ -90,10 +90,16 @@ namespace UnitTests
         {
             PointFeatures pointFeats = new PointFeatures("{C2031F6A-A596-41FA-B87D-A7A03AA0F435}");
             LinearFeatures linearFeats = new LinearFeatures("{C2031F6A-A596-41FA-B87D-A7A03AA0F435}");
-
             Assert.AreEqual(pointFeats.existingFeaturesDataItems.Count, 3);
+            Assert.AreEqual(linearFeats.existingFeaturesDataItems.Count, 3);
         }
 
-        
+        [TestMethod]
+        public void createExisting()
+        {
+            PlmReport report = new PlmReport("{C2031F6A-A596-41FA-B87D-A7A03AA0F435}");
+            Assert.AreEqual(report.pointFeatures.existingFeaturesDataItems.Count, 3);
+            Assert.AreEqual(report.linearFeatures.existingFeaturesDataItems.Count, 3);
+        }
     }
 }

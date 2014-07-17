@@ -192,6 +192,26 @@ namespace Enbridge.PLM
             }
         }
 
+        public static double resultToDouble(Object readerRecord, double returnVal = 0)
+        {
+            if (readerRecord == DBNull.Value)
+            {
+                return returnVal;
+            }
+            else
+            {
+                double output;
+                if (Double.TryParse(readerRecord.ToString(), out output))
+                {
+                    return output;
+                }
+                else
+                {
+                    return returnVal;
+                }
+            }
+        }
+
         public static DateTime processResultToDate(Object readerRecord)
         {
             if (readerRecord == DBNull.Value)

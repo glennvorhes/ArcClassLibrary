@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Geocortex.Forms.Client;
 
 namespace Enbridge.PLM
 {
@@ -16,6 +17,7 @@ namespace Enbridge.PLM
 
         private List<LinearFeat> existingFeaturesList;
         private List<LinearFeat> pendingFeaturesList;
+        public List<DataItem> existingFeaturesDataItems;
 
         /// <summary>
         /// Create the LinearFeatures object
@@ -25,11 +27,53 @@ namespace Enbridge.PLM
         {
             this.existingFeaturesList = new List<LinearFeat>();
             this.pendingFeaturesList = new List<LinearFeat>();
+            this.existingFeaturesDataItems = new List<DataItem>();
 
 
             if (reportId != null)
             {
-                //populate existing features from database
+                using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
+                {
+                    conn.Open();
+                    SqlCommand comm = conn.CreateCommand();
+
+                    comm.CommandText = "";
+                    comm.CommandText += "EXEC sde.set_current_version 'SDE.Working';";
+                    comm.CommandText += "Select *, Shape.STAsText() As geomWKT FROM sde.LINEAR_FEATURE_EVW linearTable ";
+                    comm.CommandText += "LEFT JOIN sde.LINEAR_FEATURE_TYPE_EVW lType ";
+                    comm.CommandText += "ON linearTable.FeatureType = lType.ID ";
+                    comm.CommandText += "WHERE linearTable.ReportID = @ReportID;";
+
+                    comm.Parameters.AddWithValue("@ReportID", reportId);
+
+                    try
+                    {
+                        SqlDataReader reader = comm.ExecuteReader();
+
+                        while (reader.Read())
+                        {
+                            string id = reader["ID"].ToString();
+                            string type = reader["Type"].ToString();
+                            string desc = reader["Description"].ToString();
+                            string display = string.Format("{0}: {1}", type, desc);
+
+                            this.existingFeaturesDataItems.Add(
+                                new DataItem(display, id)
+                                );
+
+                            this.existingFeaturesList.Add(new LinearFeat(reader));
+                        }
+                    }
+                    catch (SqlException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                    finally
+                    {
+                        comm.Dispose();
+                        conn.Close();
+                    }
+                }
             }
 
         }
@@ -212,6 +256,24 @@ namespace Enbridge.PLM
                 this.geomString = geomWKT;
             }
 
+            public LinearFeat(SqlDataReader reader)
+            {
+                this.ID = reader["ID"].ToString();
+                this.routeId = reader["RouteID"].ToString();
+                this.stnSeriesIdStart = reader["StationSeriesIDStart"].ToString();
+                this.stnSeriesIdEnd = reader["StationSeriesIDEnd"].ToString();
+                this.stationingStart = PLM_Helpers.resultToDouble(reader["StationingStart"]);
+                this.stationingEnd = PLM_Helpers.resultToDouble(reader["StationingEnd"]);
+                this.milePostStart = PLM_Helpers.resultToDouble(reader["MilePostStart"]);
+                this.milePostEnd = PLM_Helpers.resultToDouble(reader["MilePostEnd"]);
+                this.featureType = reader["FeatureType"].ToString();
+                this.latitudeStart = PLM_Helpers.resultToDouble(reader["LatitudeStart"]);
+                this.longitudeStart = PLM_Helpers.resultToDouble(reader["LongitudeStart"]);
+                this.latitudeEnd = PLM_Helpers.resultToDouble(reader["LatitudeEnd"]);
+                this.longitudeEnd = PLM_Helpers.resultToDouble(reader["LongitudeEnd"]);
+                this.description = reader["Description"].ToString();
+                this.geomString = reader["geomWKT"].ToString();
+            }
         }
     }
 }

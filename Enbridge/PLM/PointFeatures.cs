@@ -217,36 +217,17 @@ namespace Enbridge.PLM
 
             public PointFeat(SqlDataReader reader)
             {
-                double stn, mp, lat, lon;
                 this.ID = reader["ID"].ToString();
                 this.routeId = reader["RouteID"].ToString();
                 this.stnSeriesId = reader["StationSeriesID"].ToString();
-                if (Double.TryParse(reader["Stationing"].ToString(), out stn))
-                    this.stationing = stn;
-                else
-                    this.stationing = 0;
-                if (Double.TryParse(reader["MilePost"].ToString(), out mp))
-                    this.milePost = mp;
-                else
-                    this.milePost = 0;
+                this.stationing = PLM_Helpers.resultToDouble(reader["Stationing"]);
+                this.milePost = PLM_Helpers.resultToDouble(reader["MilePost"]);
                 this.featureType = reader["FeatureType"].ToString();
-                if (Double.TryParse(reader["Latitude"].ToString(), out lat))
-                    this.latitude = lat;
-                else
-                    this.latitude = 45;
-                if (Double.TryParse(reader["Longitude"].ToString(), out lon))
-                    this.longitude = lon;
-                else
-                    this.longitude = -92;
+                this.latitude = PLM_Helpers.resultToDouble(reader["Latitude"], 45);
+                this.longitude = PLM_Helpers.resultToDouble(reader["Longitude"], -92);
                 this.description = reader["Description"].ToString();
                 this.geomString = reader["geomWKT"].ToString();
-
-
-                //ID, ReportID, RouteID, StationSeriesID, DateAdded, Stationing, ";
-                // "MilePost, FeatureType, Latitude, Longitude, Description, Shape, geomWKT, Type
-
             }
-
         }
     }
 }
