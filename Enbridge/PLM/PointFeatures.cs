@@ -70,6 +70,82 @@ namespace Enbridge.PLM
         }
 
         /// <summary>
+        /// delete a feature
+        /// </summary>
+        /// <param name="featId">the feature id</param>
+        /// <returns></returns>
+        public bool deleteFeature(string featId)
+        {
+            bool successStatus = false;
+
+            using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
+            {
+                conn.Open();
+                SqlCommand comm = conn.CreateCommand();
+
+                comm.CommandText = "";
+                comm.CommandText += "EXEC sde.set_current_version 'SDE.Working';";
+                comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 1;";
+                comm.CommandText += "BEGIN TRANSACTION;";
+                comm.CommandText += "DELETE FROM sde.POINT_FEATURE_EVW WHERE ID = @ID;";
+                comm.CommandText += "COMMIT;";
+                comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 2;";
+                comm.Parameters.AddWithValue("@ID", featId);
+
+                try
+                {
+                    comm.ExecuteNonQuery();
+                    successStatus = true;
+
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    comm.Dispose();
+                    conn.Close();
+                }
+            }
+            
+
+            if (successStatus)
+            {
+                int removeIndex = -1;
+                for (int i = 0; i < this.existingFeaturesList.Count; i++)
+                {
+                    if (this.existingFeaturesList[i].ID.ToLower() == featId.ToLower())
+                    {
+                        removeIndex = i;
+                    }
+                }
+
+                if (removeIndex != -1)
+                {
+                    this.existingFeaturesList.RemoveAt(removeIndex);
+                }
+
+                removeIndex = -1;
+
+                for (int i = 0; i < this.existingFeaturesDataItems.Count; i++)
+                {
+                    if (this.existingFeaturesDataItems[i].Value.ToString().ToLower() == featId.ToLower())
+                    {
+                        removeIndex = i;
+                    }
+                }
+
+                if (removeIndex != -1)
+                {
+                    this.existingFeaturesDataItems.RemoveAt(removeIndex);
+                }
+            }
+
+            return successStatus;
+        }
+
+        /// <summary>
         /// Add a point feature
         /// </summary>
         /// <param name="routeId"></param>

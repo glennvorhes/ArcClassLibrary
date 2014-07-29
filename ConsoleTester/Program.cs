@@ -13,8 +13,6 @@ namespace ConsoleTester
     {
         static void Main(string[] args)
         {
-            
-
             UpdateDLLs.update();
             Console.WriteLine("finish");
             Console.ReadLine();
