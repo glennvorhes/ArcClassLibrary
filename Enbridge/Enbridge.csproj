@@ -76,7 +76,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>\\supgis01\DeveloperKit10.2\DotNet\ESRI.ArcGIS.Version.dll</HintPath>
     </Reference>
-    <Reference Include="Geocortex.EssentialsWpfApi, Version=2.13.0.302, Culture=neutral, PublicKeyToken=9fc96cbe484ecd5a, processorArchitecture=MSIL">
+    <Reference Include="Geocortex.EssentialsWpfApi, Version=2.16.0.41, Culture=neutral, PublicKeyToken=9fc96cbe484ecd5a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Latitude Geographics\Geocortex Essentials\Default\Workflow Designer\Geocortex.EssentialsWpfApi.dll</HintPath>
     </Reference>

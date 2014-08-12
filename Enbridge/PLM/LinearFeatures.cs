@@ -18,6 +18,8 @@ namespace Enbridge.PLM
         private List<LinearFeat> existingFeaturesList;
         private List<LinearFeat> pendingFeaturesList;
         public List<DataItem> existingFeaturesDataItems;
+        private List<string> pendingDelete;
+
 
         /// <summary>
         /// Create the LinearFeatures object
@@ -28,6 +30,7 @@ namespace Enbridge.PLM
             this.existingFeaturesList = new List<LinearFeat>();
             this.pendingFeaturesList = new List<LinearFeat>();
             this.existingFeaturesDataItems = new List<DataItem>();
+            this.pendingDelete = new List<string>();
 
 
             if (reportId != null)
@@ -136,20 +139,88 @@ namespace Enbridge.PLM
         //    return true;
         //}
 
-        public bool saveToDatabase(string reportID)
+        
+        public bool deleteFeature(string featId)
+        {
+
+            int removeIndex = -1;
+            for (int i = 0; i < this.existingFeaturesList.Count; i++)
+            {
+                if (this.existingFeaturesList[i].ID.ToLower() == featId.ToLower())
+                {
+                    removeIndex = i;
+                }
+            }
+
+            if (removeIndex != -1)
+            {
+                this.existingFeaturesList.RemoveAt(removeIndex);
+            }
+
+            removeIndex = -1;
+
+            for (int i = 0; i < this.existingFeaturesDataItems.Count; i++)
+            {
+                if (this.existingFeaturesDataItems[i].Value.ToString().ToLower() == featId.ToLower())
+                {
+                    removeIndex = i;
+                }
+            }
+
+            if (removeIndex != -1)
+            {
+                this.existingFeaturesDataItems.RemoveAt(removeIndex);
+            }
+
+
+            this.pendingDelete.Add(featId);
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reportID"></param>
+        /// <returns></returns>
+        public string saveToDatabase(string reportID)
         {
             Console.WriteLine("linear feature count {0}", this.pendingFeaturesList.Count);
-            bool successStatus = false;
+            string errors = "";
 
-            if (this.pendingFeaturesList.Count == 0)
+            if (this.pendingFeaturesList.Count == 0 && this.pendingDelete.Count == 0)
             {
-                return true;
+                return errors;
             }
 
             using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
             {
                 conn.Open();
                 SqlCommand comm = conn.CreateCommand();
+
+                comm.CommandText = "";
+                comm.CommandText += "EXEC sde.set_current_version 'SDE.Working';";
+                comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 1;";
+                comm.CommandText += "BEGIN TRANSACTION;";
+                comm.CommandText += "DELETE FROM sde.LINEAR_FEATURE_EVW WHERE ID = @ID;";
+                comm.CommandText += "COMMIT;";
+                comm.CommandText += "EXEC sde.edit_version 'SDE.Working', 2;";
+
+                foreach (string featId in this.pendingDelete)
+                {
+                    comm.Parameters.AddWithValue("@ID", featId);
+                    try
+                    {
+                        comm.ExecuteNonQuery();
+
+                    }
+                    catch (SqlException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        errors += ex.Message;
+                        conn.Close();
+                        return errors;
+                    }
+                }
 
                 comm.CommandText = "";
                 comm.CommandText += "Declare @geom geometry;";
@@ -194,19 +265,19 @@ namespace Enbridge.PLM
                     try
                     {
                         comm.ExecuteNonQuery();
-                        successStatus = true;
-
                     }
                     catch (SqlException ex)
                     {
                         Console.WriteLine(ex.Message);
-                        successStatus = false;
+                        errors += ex.Message;
+                        conn.Close();
+                        return errors;
                     }
                 }
                 comm.Dispose();
                 conn.Close();
             }
-            return successStatus;
+            return errors;
         }
 
         [Serializable]

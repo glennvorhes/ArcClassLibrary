@@ -30,9 +30,9 @@ namespace UnitTests
             report.rowInfo.setWorkAreaTabValues("50", "40", "yes", "no", "no");
             report.pointFeatures.addFeatureByStn("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", "{791FC1FB-47C2-4DEB-97A8-7B90FEE38921}", "desc", 1000);
 
-            bool success = report.saveReport();
-            
-            Assert.IsTrue(success, "something went wrong");
+            string errors = report.saveReport();
+
+            Assert.IsTrue(errors == "", errors);
         }
 
 
@@ -44,9 +44,9 @@ namespace UnitTests
             report.reportProperties.setReportProperties("glenn", Guid.NewGuid(), "yes", "no", null, null, Guid.NewGuid(), "new report");
             report.pointFeatures.addFeatureByStn("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc", 1000);
 
-            bool success = report.saveReport();
+            string errors = report.saveReport();
 
-            Assert.IsTrue(success, "something went wrong");
+            Assert.IsTrue(errors == "", errors);
         }
 
         [TestMethod]
@@ -58,9 +58,9 @@ namespace UnitTests
             report.pointFeatures.addFeatureByMP("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc2", 800);
             report.pointFeatures.addFeatureByLonLat("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc1", -97.159, 48.734);
 
-            bool success = report.saveReport();
+            string errors = report.saveReport();
 
-            Assert.IsTrue(success, "something went wrong");
+            Assert.IsTrue(errors == "", errors);
         }
 
         [TestMethod]
@@ -69,9 +69,9 @@ namespace UnitTests
             LinearFeatures linearFeats = new LinearFeatures();
 
             bool success = linearFeats.addFeatureByMP("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc", 1000, 1001);
-            bool saveSuccess = linearFeats.saveToDatabase(Guid.NewGuid().ToString());
+            string errors  = linearFeats.saveToDatabase(Guid.NewGuid().ToString());
             Assert.IsTrue(success);
-            Assert.IsTrue(saveSuccess);
+            Assert.IsTrue(errors == "", errors);
         }
 
         [TestMethod]
@@ -80,9 +80,9 @@ namespace UnitTests
             PointFeatures pointFeats = new PointFeatures();
 
             bool success = pointFeats.addFeatureByMP("{D4D4472B-FB1E-485B-A550-DCE76F63BC08}", Guid.NewGuid().ToString(), "desc", 1010);
-            bool saveSuccess = pointFeats.saveToDatabase(Guid.NewGuid().ToString());
+            string errors = pointFeats.saveToDatabase(Guid.NewGuid().ToString());
             Assert.IsTrue(success);
-            Assert.IsTrue(saveSuccess);
+            Assert.IsTrue(errors == "", errors);
         }
 
         [TestMethod]
@@ -100,6 +100,17 @@ namespace UnitTests
             PlmReport report = new PlmReport("{C2031F6A-A596-41FA-B87D-A7A03AA0F435}");
             Assert.AreEqual(report.pointFeatures.existingFeaturesDataItems.Count, 3);
             Assert.AreEqual(report.linearFeatures.existingFeaturesDataItems.Count, 3);
+        }
+
+        [TestMethod]
+        public void retrieveFileData()
+        {
+            string fileName = "";
+            string fileId = "11c72f72-2a38-41c8-9c36-25a59cb48b3c";
+            byte[] data = Enbridge.PLM.FileAttachments.get_file(fileId, out fileName);
+            Console.WriteLine(fileName);
+            Assert.IsNotNull(data, "data shouldn't be null");
+
         }
     }
 }

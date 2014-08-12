@@ -178,13 +178,14 @@ namespace Enbridge.PLM
             return returnString;
         }
 
-        public bool saveToDatabase(string reportID)
+        public string saveToDatabase(string reportID)
         {
+            string errors = "";
             if (!this.hasValuesSet)
             {
-                return true;
+                return errors;
             }
-            bool successStatus = false;
+
             using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
             {
                 conn.Open();
@@ -203,9 +204,9 @@ namespace Enbridge.PLM
                 catch (SqlException ex)
                 {
                     Console.WriteLine(ex.Message);
+                    errors += ex.Message;
                     conn.Close();
-                    successStatus = false;
-                    return successStatus;
+                    return errors;
                 }
 
                 comm.Parameters.Clear();
@@ -255,11 +256,11 @@ namespace Enbridge.PLM
                 try
                 {
                     comm.ExecuteNonQuery();
-                    successStatus = true;
 
                 }
                 catch (SqlException ex)
                 {
+                    errors += ex.Message;
                     Console.WriteLine(ex.Message);
                 }
                 finally
@@ -268,11 +269,8 @@ namespace Enbridge.PLM
                     conn.Close();
                 }
             }
-            return successStatus;
-
-
+            return errors;
         }
-
 
     }
 }

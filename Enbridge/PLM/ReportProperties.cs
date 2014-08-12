@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Enbridge.PLM
 {
+    /// <summary>
+    /// Report Properties
+    /// </summary>
     [Serializable]
     public class ReportProperties
     {
@@ -49,12 +52,19 @@ namespace Enbridge.PLM
 
         public bool hasValuesSet { get; private set; }
 
+        /// <summary>
+        /// Empty constructor
+        /// </summary>
         public ReportProperties()
         {
             this.hasValuesSet = false;
             this.LoadedDate = DateTime.Now;
         }
 
+        /// <summary>
+        /// Existing report constructor
+        /// </summary>
+        /// <param name="reportId"></param>
         public ReportProperties(string reportId)
         {
             this.hasValuesSet = false;
@@ -99,6 +109,17 @@ namespace Enbridge.PLM
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="reportType"></param>
+        /// <param name="sleeveUsed"></param>
+        /// <param name="weldingDone"></param>
+        /// <param name="stoppleEquipmentUsed"></param>
+        /// <param name="afrNeeded"></param>
+        /// <param name="plmFacility"></param>
+        /// <param name="reportName"></param>
         public void setReportProperties(string username, Object reportType, Object sleeveUsed, Object weldingDone, Object stoppleEquipmentUsed, Object afrNeeded,
             Object plmFacility, string reportName) 
         {
@@ -118,6 +139,10 @@ namespace Enbridge.PLM
             Console.WriteLine(this.ToString());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             string returnString = "";
@@ -131,15 +156,18 @@ namespace Enbridge.PLM
             return returnString;
         }
 
-
-        public bool saveToDatabase(string reportID)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reportID"></param>
+        /// <returns></returns>
+        public string saveToDatabase(string reportID)
         {
+            string errors = "";
             if (!this.hasValuesSet)
             {
-                return true;
+                return errors;
             }
-
-            bool successStatus = false;
             
             using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
             {
@@ -161,8 +189,7 @@ namespace Enbridge.PLM
                 {
                     Console.WriteLine(ex.Message);
                     conn.Close();
-                    successStatus = false;
-                    return successStatus;
+                    return ex.Message;
                 }
 
                 comm.Parameters.Clear();
@@ -199,11 +226,11 @@ namespace Enbridge.PLM
                 try
                 {
                     comm.ExecuteNonQuery();
-                    successStatus = true;
                 }
                 catch (SqlException ex)
                 {
                     Console.WriteLine(ex.Message);
+                    errors = ex.Message;
                 }
                 finally
                 {
@@ -211,7 +238,7 @@ namespace Enbridge.PLM
                     conn.Close();
                 }
             }
-            return successStatus;
+            return errors;
 
 
         }

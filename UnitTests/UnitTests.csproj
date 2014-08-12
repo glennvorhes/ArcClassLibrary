@@ -37,7 +37,7 @@
   <ItemGroup>
     <Reference Include="Geocortex.EssentialsWpfApi, Version=2.13.0.302, Culture=neutral, PublicKeyToken=9fc96cbe484ecd5a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Q:\Workflow Designer\Geocortex.EssentialsWpfApi.dll</HintPath>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Latitude Geographics\Geocortex Essentials\Default\Workflow Designer\Geocortex.EssentialsWpfApi.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

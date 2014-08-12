@@ -109,13 +109,13 @@ namespace Enbridge.PLM
         }
 
 
-        public bool savePendingFilesToDatabase(string reportID)
+        public string savePendingFilesToDatabase(string reportID)
         {
-            bool successStatus = false;
+            string errors = "";
 
             if (this.pendingFilesFileItemDict.Count == 0)
             {
-                return true;
+                return errors;
             }
 
             using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
@@ -148,13 +148,11 @@ namespace Enbridge.PLM
                     try
                     {
                         comm.ExecuteNonQuery();
-                        successStatus = true;
-
                     }
                     catch (SqlException ex)
                     {
                         Console.WriteLine(ex.Message);
-                        successStatus = false;
+                        errors += "Attachments: " + ex.Message;
                     }
                 }
 
@@ -162,9 +160,48 @@ namespace Enbridge.PLM
                 conn.Close();
 
             }
-            return successStatus;
+            return errors;
         }
 
-    }
+        public static byte[] get_file(string fileId, out string fileName)
+        {
+            byte[] data = null;
+            fileName = null;
 
+            using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
+            {
+                conn.Open();
+                SqlCommand comm = conn.CreateCommand();
+
+                comm.CommandText = "";
+                comm.CommandText += "EXEC sde.set_current_version 'SDE.Working';";
+                comm.CommandText += "SELECT * FROM sde.ATTACHMENTS_EVW ";
+                comm.CommandText += "WHERE ID = @ID;";
+
+                comm.Parameters.AddWithValue("@ID", fileId);
+
+                try
+                {
+                    SqlDataReader reader = comm.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        Console.WriteLine(reader);
+                        fileName = reader["FileName"].ToString();
+                        data = reader["Data"] as byte[];
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    comm.Dispose();
+                    conn.Close();
+                } 
+            }
+            return data;
+        }
+    }
 }

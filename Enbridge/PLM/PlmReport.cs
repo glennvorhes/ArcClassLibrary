@@ -112,69 +112,90 @@ namespace Enbridge.PLM
         /// <summary>
         /// Submit the form to the database
         /// </summary>
-        public bool saveReport()
+        public string saveReport()
         {
-            bool saveSuccessStatus = false;
+            List<string> errorList = new List<string>();
 
-            saveSuccessStatus = this.reportProperties.saveToDatabase(this.reportId);
-            if (!saveSuccessStatus)
+            string errorProperties = this.reportProperties.saveToDatabase(this.reportId);
+            if (errorProperties != "")
             {
-                this.deleteReport();
-                return saveSuccessStatus;
+                //this.deleteReport();
+                errorList.Add(errorProperties);
+                //return errorProperties;
             }
 
-            saveSuccessStatus = this.pointFeatures.saveToDatabase(this.reportId);
-            if (!saveSuccessStatus)
+            string errorPointFeatures = this.pointFeatures.saveToDatabase(this.reportId);
+            if (errorPointFeatures != "")
             {
-                this.deleteReport();
-                return saveSuccessStatus;
+                errorList.Add(errorPointFeatures);
+                //this.deleteReport();
+                //return errors;
             }
 
-            saveSuccessStatus = this.linearFeatures.saveToDatabase(this.reportId);
-            if (!saveSuccessStatus)
+            string errorLinearFeatures = this.linearFeatures.saveToDatabase(this.reportId);
+            if (errorLinearFeatures != "")
             {
-                this.deleteReport();
-                return saveSuccessStatus;
+                errorList.Add(errorLinearFeatures);
+                //this.deleteReport();
+                //return errors;
             }
 
 
             if (this.isForeignCrossing)
             {
+                string errorForeign = "";
                 if (this.foreignCrossing.hasValuesSet)
                 {
-                    saveSuccessStatus = this.foreignCrossing.saveToDatabase(this.reportId);
+                    errorForeign = this.foreignCrossing.saveToDatabase(this.reportId);
                 }
 
-                if (!saveSuccessStatus)
+                if (errorForeign != "")
                 {
-                    this.deleteReport();
+                    errorList.Add(errorLinearFeatures);
                 }
             }
             else
             {
-                bool successPermanentRepair, successCorossionInspection,
-                    successRowInfo, successFileUpload;
-
-                successPermanentRepair = this.permanentRepair.saveToDatabase(this.reportId);
-                successCorossionInspection = this.corrosionInspection.saveToDatabase(this.reportId);
-                successRowInfo = this.rowInfo.saveToDatabase(this.reportId);
-                successFileUpload = this.fileAttachments.savePendingFilesToDatabase(this.reportId);
-
-                saveSuccessStatus = (successPermanentRepair && successCorossionInspection &&
-                    successRowInfo && successFileUpload);
-
-                if (!saveSuccessStatus)
+                string errorPermanentRepair = this.permanentRepair.saveToDatabase(this.reportId);
+                string errorCorossionInspection = this.corrosionInspection.saveToDatabase(this.reportId);
+                string errorRowInfo = this.rowInfo.saveToDatabase(this.reportId);
+                string errorFileUpload = this.fileAttachments.savePendingFilesToDatabase(this.reportId);
+                
+                if (errorPermanentRepair != "")
                 {
-                    this.deleteReport();
+                    errorList.Add(errorPermanentRepair);
                 }
-
+                if (errorPermanentRepair != "")
+                {
+                    errorList.Add(errorPermanentRepair);
+                }
+                if (errorRowInfo != "")
+                {
+                    errorList.Add(errorRowInfo);
+                }
+                if (errorFileUpload != "")
+                {
+                    errorList.Add(errorFileUpload);
+                }
             }
-            return saveSuccessStatus;
+
+            if (errorList.Count > 0)
+            {
+                return String.Join("\n", errorList.ToArray());
+            }
+            else
+            {
+                return "";
+            }
         }
 
-        public bool deleteReport()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string deleteReport()
         {
-            bool deleteSuccessful = false;
+            string status = "";
 
             using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
             {
@@ -199,11 +220,11 @@ namespace Enbridge.PLM
                 try
                 {
                     comm.ExecuteNonQuery();
-                    deleteSuccessful = true;
                 }
                 catch (SqlException ex)
                 {
                     Console.WriteLine(ex.Message);
+                    status = ex.Message;
                 }
                 finally
                 {
@@ -212,13 +233,13 @@ namespace Enbridge.PLM
                 }
             }
 
-            return deleteSuccessful;
+            return status;
         }
 
 
-        public bool approveReport(string username)
+        public string approveReport(string username)
         {
-            bool approveSuccess = false;
+            string status = "";
 
             using (SqlConnection conn = new SqlConnection(AppConstants.CONN_STRING_PLM_REPORTS))
             {
@@ -236,17 +257,16 @@ namespace Enbridge.PLM
                     int rowCount = (int)comm.ExecuteScalar();
                     if (rowCount < 1)
                     {
-                        //No rows found
-                        throw new Exception("No rows found");
+                        throw new IndexOutOfRangeException("No rows found");
                     }
                     
                 }
-                catch (Exception ex)
+                catch (IndexOutOfRangeException ex)
                 {
                     Console.WriteLine(ex.Message);
                     comm.Dispose();
                     conn.Close();
-                    return false;
+                    return "No matching record found";
                 }
 
                 comm.Parameters.Clear();
@@ -267,11 +287,11 @@ namespace Enbridge.PLM
                 try
                 {
                     comm.ExecuteNonQuery();
-                    approveSuccess = true;
                 }
                 catch (SqlException ex)
                 {
                     Console.WriteLine(ex.Message);
+                    status = ex.Message;
                 }
                 finally
                 {
@@ -279,11 +299,7 @@ namespace Enbridge.PLM
                     conn.Close();
                 }
             }
-
-            return approveSuccess;
+            return status;
         }
-
-
-        
     }
 }
